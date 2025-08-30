@@ -8,6 +8,7 @@ class HomePageProvider extends ChangeNotifier {
   final int _maxQuestions = 10;
 
   int _currentQuestionCount = 0;
+  int _correctAnswered = 0;
 
   List? questions;
 
@@ -41,19 +42,43 @@ class HomePageProvider extends ChangeNotifier {
     bool isCorrect =
         questions![_currentQuestionCount]["correct_answer"] == _answer;
     _currentQuestionCount++;
-    showDialog(context: context, builder: (BuildContext _context){
-      return AlertDialog(
-        backgroundColor: isCorrect ? Colors.green : Colors.red,
-        title: Icon(
-          isCorrect ? Icons.check_circle : Icons.cancel_sharp,
-          color: Colors.white,
-        ),
-      );
-    });
-    await Future.delayed(
-      const Duration(seconds: 1),
+    isCorrect ? _correctAnswered++ : null;
+    showDialog(
+      context: context,
+      builder: (BuildContext _context) {
+        return AlertDialog(
+          backgroundColor: isCorrect ? Colors.green : Colors.red,
+          title: Icon(
+            isCorrect ? Icons.check_circle : Icons.cancel_sharp,
+            color: Colors.white,
+          ),
+        );
+      },
     );
+
+    await Future.delayed(const Duration(seconds: 1));
     Navigator.pop(context);
-    notifyListeners();
+
+    if (_currentQuestionCount == _maxQuestions) {
+      endGame();
+    } else {
+      notifyListeners();
+    }
+  }
+
+  Future<void> endGame() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext _context) {
+        return AlertDialog(
+          backgroundColor: Colors.lightBlueAccent,
+          title: const Text("Game Over"),
+          content: Text('You Scored: $_correctAnswered/$_maxQuestions'),
+        );
+      },
+    );
+    await Future.delayed(Duration(seconds: 4));
+    Navigator.pop(context);
+    Navigator.pop(context);
   }
 }

@@ -1,29 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:trivia_quizzes_flutter_app_demo/provider/home_page_provider.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
 
   double? _deviceWidth, _deviceHeight;
+  HomePageProvider? _pageProvider;
 
   @override
   Widget build(BuildContext context) {
     _deviceWidth = MediaQuery.of(context).size.width;
     _deviceHeight = MediaQuery.of(context).size.height;
 
-    return _buildUI();
+    return ChangeNotifierProvider(
+      create: (context) {
+        return HomePageProvider(context: context);
+      },
+      child: _buildUI(),
+    );
   }
 
   Widget _buildUI() {
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            vertical: _deviceHeight! * 0.05,
-            horizontal: _deviceWidth! * 0.04,
-          ),
-          child: _questionUI(),
-        ),
-      ),
+    return Builder(
+      builder: (context) {
+        _pageProvider = context.watch<HomePageProvider>();
+        if (_pageProvider!.questions != null) {
+          return Scaffold(
+            body: SafeArea(
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  vertical: _deviceHeight! * 0.05,
+                  horizontal: _deviceWidth! * 0.04,
+                ),
+                child: _questionUI(),
+              ),
+            ),
+          );
+        } else {
+          return Center(child: CircularProgressIndicator());
+        }
+      },
     );
   }
 
@@ -48,7 +65,7 @@ class HomePage extends StatelessWidget {
 
   Widget _questionText() {
     return Text(
-      "Test question 1, which is nothing for now",
+      _pageProvider!.getCurrentQuestion(),
       style: TextStyle(
         fontSize: 28,
         fontWeight: FontWeight.w500,
@@ -59,7 +76,9 @@ class HomePage extends StatelessWidget {
 
   Widget _trueButton() {
     return MaterialButton(
-      onPressed: () {},
+      onPressed: () {
+        _pageProvider!.getAnswerQuestion("True");
+      },
       minWidth: _deviceWidth! * 0.80,
       height: _deviceHeight! * 0.10,
       color: Colors.green,
@@ -75,7 +94,9 @@ class HomePage extends StatelessWidget {
 
   Widget _falseButton() {
     return MaterialButton(
-      onPressed: () {},
+      onPressed: () {
+        _pageProvider!.getAnswerQuestion("False");
+      },
       minWidth: _deviceWidth! * 0.80,
       height: _deviceHeight! * 0.10,
       color: Colors.redAccent,
